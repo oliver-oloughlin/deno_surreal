@@ -23,7 +23,7 @@ interface Person {
   age: number
 }
 
-const p1 = await db.create("person:1", {
+const p1 = await db.create<Person>("person:1", {
   name: "Max Manus",
   age: 32
 })
