@@ -1,4 +1,4 @@
-import { ConnectionOptions, QueryResult } from "./types.ts"
+import { ConnectionOptions, JSONObject, QueryResult } from "./types.ts"
 
 export class SurrealDB {
 
@@ -7,6 +7,7 @@ export class SurrealDB {
   private pass: string
   private namespace: string
   private database: string
+  private headers: Headers
 
   constructor(url: string = "http://127.0.0.1:8000/sql", {
     user,
@@ -19,21 +20,20 @@ export class SurrealDB {
     this.pass = pass
     this.namespace = namespace
     this.database = database
-  }
-
-  async query<T>(queryStr: string) {
+    
     const auth = `Basic ${btoa(`${this.user}:${this.pass}`)}`
-
-    const headers = new Headers({
+    this.headers = new Headers({
       "Content-Type": "application/json",
       "Authorization": auth,
       "NS": this.namespace,
       "DB": this.database
     })
+  }
 
+  async query<T = JSONObject>(queryStr: string) {
     const res = await fetch(this.url, {
       method: "POST",
-      headers,
+      headers: this.headers,
       body: queryStr
     })
 
@@ -45,6 +45,25 @@ export class SurrealDB {
     }
 
     return result as QueryResult<T>
+  }
+
+  async create<T = JSONObject>(id: string, data: T) {
+    const res = await fetch(this.url, {
+      method: "POST",
+      headers: this.headers,
+      body: `CREATE ${id} CONTENT ${JSON.stringify(data)}`
+    })
+
+    const queryResults = await res.json() as QueryResult<T>
+    const fQueryResult = queryResults[0]
+
+    if (!res.ok  || fQueryResult.status === "ERR") {
+      console.error(fQueryResult)
+      return null
+    }
+
+    const result = fQueryResult.result![0]
+    return result
   }
 
 }
