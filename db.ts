@@ -2,13 +2,13 @@ import { ConnectionOptions, QueryResult } from "./types.ts"
 
 export class SurrealDB {
 
-  url: string
-  user: string
-  pass: string
-  namespace: string
-  database: string
+  private url: string
+  private user: string
+  private pass: string
+  private namespace: string
+  private database: string
 
-  constructor(url: string, {
+  constructor(url: string = "http://127.0.0.1:8000/sql", {
     user,
     pass,
     namespace,
@@ -22,7 +22,7 @@ export class SurrealDB {
   }
 
   async query<T>(queryStr: string) {
-    const auth = `Basic ${window.btoa(`${this.user}:${this.pass}`)}`
+    const auth = `Basic ${btoa(`${this.user}:${this.pass}`)}`
 
     const headers = new Headers({
       "Content-Type": "application/json",
