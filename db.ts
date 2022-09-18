@@ -34,113 +34,144 @@ export class SurrealDB {
   }
 
   async query<T = JSONObject>(queryStr: string) {
-    const res = await fetch(this.sqlUrl, {
-      method: "POST",
-      headers: this.headers,
-      body: queryStr
-    })
-
-    const queryResult = await res.json()
-
-    if (!res.ok) {
-      if (queryResult) console.error(queryResult)
+    try {
+      const res = await fetch(this.sqlUrl, {
+        method: "POST",
+        headers: this.headers,
+        body: queryStr
+      })
+  
+      const queryResult = await res.json()
+      const firstQR = queryResult[0]
+  
+      if (!res.ok || !firstQR) {
+        if (queryResult) console.error(queryResult)
+        return [] as QueryResult<T>
+      }
+  
+      return queryResult as QueryResult<T>
+    } catch (err) {
+      console.error(err)
       return [] as QueryResult<T>
     }
-
-    return queryResult as QueryResult<T>
   }
 
   async create<T = JSONObject>(identifier: string, data: T) {
-    const url = this.#getIdentifierUrl(identifier)
-    const res = await fetch(url, {
-      method: "POST",
-      headers: this.headers,
-      body: JSON.stringify(data)
-    })
+    try {
+      const url = this.#getIdentifierUrl(identifier)
+      const res = await fetch(url, {
+        method: "POST",
+        headers: this.headers,
+        body: JSON.stringify(data)
+      })
 
-    const queryResult = await res.json() as QueryResult<T>
-    const firstQR = queryResult[0]
+      const queryResult = await res.json() as QueryResult<T>
+      const firstQR = queryResult[0]
 
-    if (!res.ok || firstQR.status === "ERR") {
-      if (firstQR) console.error(firstQR)
+      if (!res.ok || firstQR.status === "ERR") {
+        if (firstQR) console.error(firstQR)
+        return null
+      }
+
+      return firstQR.result![0]
+    } catch (err) {
+      console.error(err)
       return null
     }
-
-    return firstQR.result![0]
   }
 
   async select<T>(identifier: string) {
-    const url = this.#getIdentifierUrl(identifier)
-    const res = await fetch(url, {
-      method: "GET",
-      headers: this.headers
-    })
+    try {
+      const url = this.#getIdentifierUrl(identifier)
+      const res = await fetch(url, {
+        method: "GET",
+        headers: this.headers
+      })
 
-    const queryResult = await res.json() as QueryResult<T>
-    const firstQR = queryResult[0]
+      const queryResult = await res.json() as QueryResult<T>
+      const firstQR = queryResult[0]
 
-    if (!res.ok || firstQR.status === "ERR") {
-      if (firstQR) console.error(firstQR)
+      if (!res.ok || firstQR.status === "ERR") {
+        if (firstQR) console.error(firstQR)
+        return [] as T[]
+      }
+
+      return firstQR.result!
+    } catch (err) {
+      console.error(err)
       return [] as T[]
     }
-
-    return firstQR.result!
   }
 
   async delete(identifier: string) {
-    const url = this.#getIdentifierUrl(identifier)
-    const res = await fetch(url, {
-      method: "DELETE",
-      headers: this.headers
-    })
+    try {
+      const url = this.#getIdentifierUrl(identifier)
+      const res = await fetch(url, {
+        method: "DELETE",
+        headers: this.headers
+      })
 
-    const queryResult = await res.json()
-    const firstQR = queryResult[0]
+      const queryResult = await res.json()
+      const firstQR = queryResult[0]
 
-    if (!res.ok || firstQR.status === "ERR") {
-      if (firstQR) console.error(firstQR)
+      if (!res.ok || firstQR.status === "ERR") {
+        if (firstQR) console.error(firstQR)
+        return false
+      }
+
+      return true
+    } catch (err) {
+      console.error(err)
       return false
     }
-
-    return true
   }
 
   async update<T = JSONObject>(identifier: string, data: Partial<T>) {
-    const url = this.#getIdentifierUrl(identifier)
-    const res = await fetch(url, {
-      method: "PUT",
-      headers: this.headers,
-      body: JSON.stringify(data)
-    })
+    try {
+      const url = this.#getIdentifierUrl(identifier)
+      const res = await fetch(url, {
+        method: "PUT",
+        headers: this.headers,
+        body: JSON.stringify(data)
+      })
 
-    const queryResult = await res.json() as QueryResult<T>
-    const firstQR = queryResult[0]
+      const queryResult = await res.json() as QueryResult<T>
+      const firstQR = queryResult[0]
 
-    if (!res.ok || firstQR.status === "ERR") {
-      if (firstQR) console.error(firstQR)
+      if (!res.ok || firstQR.status === "ERR") {
+        if (firstQR) console.error(firstQR)
+        return null
+      }
+
+      return firstQR.result![0]
+    } catch (err) {
+      console.error(err)
       return null
     }
-
-    return firstQR.result![0]
   }
 
   async change<T = JSONObject>(identifier: string, data: Partial<T>) {
-    const url = this.#getIdentifierUrl(identifier)
-    const res = await fetch(url, {
-      method: "PATCH",
-      headers: this.headers,
-      body: JSON.stringify(data)
-    })
+    try {
+      const url = this.#getIdentifierUrl(identifier)
+      const res = await fetch(url, {
+        method: "PATCH",
+        headers: this.headers,
+        body: JSON.stringify(data)
+      })
 
-    const queryResult = await res.json() as QueryResult<T>
-    const firstQR = queryResult[0]
+      const queryResult = await res.json() as QueryResult<T>
+      const firstQR = queryResult[0]
 
-    if (!res.ok || firstQR.status === "ERR") {
-      if (firstQR) console.error(firstQR)
+      if (!res.ok || firstQR.status === "ERR") {
+        if (firstQR) console.error(firstQR)
+        return null
+      }
+
+      return firstQR.result![0]
+    } catch (err) {
+      console.error(err)
       return null
     }
-
-    return firstQR.result![0]
   }
 
   #getIdentifierUrl(identifier: string) {

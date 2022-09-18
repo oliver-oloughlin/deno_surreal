@@ -13,8 +13,10 @@ For documentation on SurrealDB go to the official [SurrealDB Website](https://su
 Create a SurrealDB connection:
 > Make sure it is the base url to your hosted database, and includes the port
 
+> As of now only allows basic authentication
+
 ```
-import { SurrealDB } from "https://{pathToModule}/mod.ts"
+import { SurrealDB } from "https://deno.land/x/deno_surreal/mod.ts"
 
 const db = new SurrealDB("http://127.0.0.1:8000", {
   user: "root",
@@ -25,6 +27,7 @@ const db = new SurrealDB("http://127.0.0.1:8000", {
 ```
 
 Create a new table record:
+> Typing is optional
 
 ```
 interface Person {
@@ -46,16 +49,15 @@ Execute a custom query:
 const queryResult = await db.query<Person>("SELECT * FROM person WHERE age > 18")
 const firstQR = queryResult[0]
 const result = firstQR.result
-console.log(p1)
-// Prints: [ { age: 32, id: "person:1", name: "Max Manus" } ]
+console.log(p1) // Prints: [ { age: 32, id: "person:1", name: "Max Manus" } ]
 ```
 
-It is also possible to check for errors with the query from the last example:
+It is also possible to check for errors with custom queries:
 
 ```
-const queryResult = await db.query<Person>("SELECT * FROM person")
+const queryResult = await db.query<Person>("SELECTTTT * FROM person WHERE age > 18")
 const firstQR = queryResult[0]
-if (firstQR.status === "ERR") {
+if (!firstQR || firstQR.status === "ERR") {
   // Do something...
 }
 ```
