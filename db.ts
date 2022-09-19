@@ -24,13 +24,19 @@ export class SurrealDB {
     this.namespace = namespace
     this.database = database
     
-    const auth = `Basic ${btoa(`${this.user}:${this.pass}`)}`
-    this.headers = new Headers({
-      "Content-Type": "application/json",
-      "Authorization": auth,
-      "NS": this.namespace,
-      "DB": this.database
-    })
+    this.headers = this.#createHeaders()
+  }
+
+  signin({ user, pass }: { user?: string, pass?: string }) {
+    if (user) this.user = user
+    if (pass) this.pass = pass
+    this.headers = this.#createHeaders()
+  }
+
+  use({ namespace, database }: { namespace?: string, database?: string }) {
+    if (namespace) this.namespace = namespace
+    if (database) this.database = database
+    this.headers = this.#createHeaders()
   }
 
   async query<T = JSONObject>(queryStr: string) {
@@ -150,7 +156,7 @@ export class SurrealDB {
     }
   }
 
-  async change<T = JSONObject>(identifier: string, data: Partial<T>) {
+  async modify<T = JSONObject>(identifier: string, data: Partial<T>) {
     try {
       const url = this.#getIdentifierUrl(identifier)
       const res = await fetch(url, {
@@ -179,6 +185,16 @@ export class SurrealDB {
     const table = parts[0]
     const id = parts[1]
     return id ? `${this.tableUrl}${table}/${id}` : `${this.tableUrl}${table}`
+  }
+
+  #createHeaders() {
+    const auth = `Basic ${btoa(`${this.user}:${this.pass}`)}`
+    return new Headers({
+      "Content-Type": "application/json",
+      "Authorization": auth,
+      "NS": this.namespace,
+      "DB": this.database
+    })
   }
 
 }

@@ -14,7 +14,6 @@ Create a SurrealDB connection:
 > Make sure it is the base url to your hosted database, and includes the port
 
 > As of now only allows basic authentication
-
 ```
 import { SurrealDB } from "https://deno.land/x/deno_surreal/mod.ts"
 
@@ -26,9 +25,32 @@ const db = new SurrealDB("http://127.0.0.1:8000", {
 })
 ```
 
+<br>
+
+Sign in with a different username / password:
+> You could also choose to only update one
+```
+db.signin({
+  user: "username",
+  pass: "password"
+})
+```
+
+<br>
+
+Use a different namespace / database:
+> You could also choose to only update one
+```
+db.use({
+  namespace: "test2", 
+  database: "test2"
+})
+```
+
+<br>
+
 Create a new table record:
 > Typing is optional
-
 ```
 interface Person {
   name: string,
@@ -43,8 +65,9 @@ const p1 = await db.create<Person>("person:1", {
 console.log(p1) // Prints: { age: 32, id: "person:1", name: "Max Manus" }
 ```
 
-Execute a custom query:
+<br>
 
+Execute a custom query:
 ```
 const queryResult = await db.query<Person>("SELECT * FROM person WHERE age > 18")
 const firstQR = queryResult[0]
@@ -52,8 +75,9 @@ const result = firstQR.result
 console.log(p1) // Prints: [ { age: 32, id: "person:1", name: "Max Manus" } ]
 ```
 
-It is also possible to check for errors with custom queries:
+<br>
 
+It is also possible to check for errors with custom queries:
 ```
 const queryResult = await db.query<Person>("SELECTTTT * FROM person WHERE age > 18")
 const firstQR = queryResult[0]
@@ -62,12 +86,16 @@ if (!firstQR || firstQR.status === "ERR") {
 }
 ```
 
+<br>
+
 Select one or more records from a table:
 
 ```
   const result1 = await db.select<Person>("person")
   const result2 = await db.select<Person>("person:1")
 ```
+
+<br>
 
 Delete one or more records from a table:
 > Note that delete queries are not typable as they only return true or false
@@ -77,6 +105,8 @@ Delete one or more records from a table:
   console.log(deleted1, deleted2) // Prints: true false
 ```
 
+<br>
+
 Update a specific record:
 ```
   const p1 = await db.update<Person>("person:1", {
@@ -85,9 +115,11 @@ Update a specific record:
   console.log(p1) // Prints: { age: 98, id: "person:1", name: "Max Manus" }
 ```
 
+<br>
+
 Modify a specific record:
 ```
-  const p1 = await db.change<Person>("person:1", {
+  const p1 = await db.modify<Person>("person:1", {
     age: 57
   })
   console.log(p1) // Prints: { age: 57, id: "person:1", name: "Max Manus" }
