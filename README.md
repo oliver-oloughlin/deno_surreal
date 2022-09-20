@@ -52,7 +52,8 @@ db.use({
 Create a new table record:
 > Typing is optional
 ```
-interface Person {
+type Person = {
+  id: string
   name: string,
   age: number
 }
@@ -67,9 +68,10 @@ console.log(p1) // Prints: { age: 32, id: "person:1", name: "Max Manus" }
 
 <br>
 
-Execute a custom query:
+Execute custom queries:
+> It is possible to send multiple queries at once
 ```
-const queryResult = await db.query<Person>("SELECT * FROM person WHERE age > 18")
+const queryResults = await db.query<Person>("SELECT * FROM person WHERE age > 18")
 const firstQR = queryResult[0]
 const result = firstQR.result
 console.log(p1) // Prints: [ { age: 32, id: "person:1", name: "Max Manus" } ]
@@ -88,6 +90,15 @@ if (!firstQR || firstQR.status === "ERR") {
 
 <br>
 
+Execute a single custom query:
+> Single queries only return the resulting data of the query
+```
+const result = await db.singleQuery<Person>("SELECT * FROM person WHERE name = 'Max Manus'")
+console.log(result) // Prints: [ { age: 32, id: "person:1", name: "Max Manus" } ]
+```
+
+<br>
+
 Select one or more records from a table:
 
 ```
@@ -100,9 +111,8 @@ Select one or more records from a table:
 Delete one or more records from a table:
 > Note that delete queries are not typable as they only return true or false
 ```
-  const deleted1 = await db.delete("person")
-  const deleted2 = await db.delete("person:1")
-  console.log(deleted1, deleted2) // Prints: true false
+  await db.delete("person")
+  await db.delete("person:1")
 ```
 
 <br>

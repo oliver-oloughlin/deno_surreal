@@ -1,6 +1,4 @@
-export type QueryResult<T> = ResultEntry<T>[]
-
-export interface ResultEntry<T> {
+export interface QueryResult<T> {
   time: string,
   status: "OK" | "ERR",
   detail?: string,
@@ -13,6 +11,12 @@ export interface ConnectionOptions {
   namespace: string,
   database: string
 }
+
+export type Record<T> = T & { id: string }
+
+export type PartialDataObject<T> = Omit<Partial<T>, "id">
+
+export type DataObject<T> = Omit<T, "id">
 
 export interface JSONObject {
   [key: string]: JSONValue
