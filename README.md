@@ -109,7 +109,6 @@ Select one or more records from a table:
 <br>
 
 Delete one or more records from a table:
-> Note that delete queries are not typable as they only return true or false
 ```
   await db.delete("person")
   await db.delete("person:1")
