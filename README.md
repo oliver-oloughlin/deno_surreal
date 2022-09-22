@@ -1,6 +1,8 @@
 # deno_surreal
 
-## Simple library for querying a SurrealDB database
+### Simple library for querying a SurrealDB database
+
+<br>
 
 **Disclaimer! This project is not meant to be a replacement or contender to any official tools/libraries. It is not stable, and exists merely because I wanted to do a small project involving SurrealDB.**
 
