@@ -1,10 +1,10 @@
 # deno_surreal
 
-Simple library for querying a SurrealDB database
-
-This library has no dependencies
+## Simple library for querying a SurrealDB database
 
 **Disclaimer! This project is not meant to be a replacement or contender to any official tools/libraries. It is not stable, and exists merely because I wanted to do a small project involving SurrealDB.**
+
+This library has no dependencies
 
 For documentation on SurrealDB go to the official [SurrealDB Website](https://surrealdb.com)
 
@@ -68,37 +68,6 @@ console.log(p1) // Prints: { age: 32, id: "person:1", name: "Max Manus" }
 
 <br>
 
-Execute custom queries:
-> It is possible to send multiple queries at once
-```
-const queryResults = await db.query<Person>("SELECT * FROM person WHERE age > 18")
-const firstQR = queryResult[0]
-const result = firstQR.result
-console.log(p1) // Prints: [ { age: 32, id: "person:1", name: "Max Manus" } ]
-```
-
-<br>
-
-It is also possible to check for errors with custom queries:
-```
-const queryResult = await db.query<Person>("SELECTTTT * FROM person WHERE age > 18")
-const firstQR = queryResult[0]
-if (!firstQR || firstQR.status === "ERR") {
-  // Do something...
-}
-```
-
-<br>
-
-Execute a single custom query:
-> Single queries only return the resulting data of the query
-```
-const result = await db.singleQuery<Person>("SELECT * FROM person WHERE name = 'Max Manus'")
-console.log(result) // Prints: [ { age: 32, id: "person:1", name: "Max Manus" } ]
-```
-
-<br>
-
 Select one or more records from a table:
 
 ```
@@ -132,4 +101,53 @@ Modify a specific record:
     age: 57
   })
   console.log(p1) // Prints: { age: 57, id: "person:1", name: "Max Manus" }
+```
+
+<br>
+
+Execute custom queries:
+> Possible to execute multiple queries at once, returns a list of result lists
+```
+const queryStr = `
+SELECT * FROM person;
+SELECT * FROM person WHERE age < 18;
+`
+
+const [ people, peopleUnder18 ] = await db.query(queryStr)
+console.log(people) // Prints: [ { age: 32, id: "person:1", name: "Max Manus" }
+console.log(peopleUnder18) // Prints: []
+```
+
+<br>
+
+Execute a single custom query:
+> Will only execute the first query if multiple are present, returns a single result list
+```
+const peopleNamedMax = await db.singleQuery<Person>("SELECT * FROM person WHERE name = 'Max Manus'")
+console.log(peopleNamedMax) 
+// Prints: [ { age: 32, id: "person:1", name: "Max Manus" } ]
+```
+
+<br>
+
+Execute custom queries and receive the raw query results:
+```
+const queryStr = `
+SELECT * FROM person;
+SELECT * FROM person WHERE age < 18;
+`
+
+const queryResults = await db.query(queryStr)
+if (!queryResults) {
+  // if no results, do something..
+} else {
+  queryResults.forEach(qr => {
+    if (qr.status === "ERR") {
+      // Query error, do something..
+    } else {
+      // Receive and manage the result list
+      console.log(qr.result)
+    }
+  })
+}
 ```

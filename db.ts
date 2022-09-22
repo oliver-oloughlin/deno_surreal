@@ -39,7 +39,7 @@ export class SurrealDB {
     this.headers = this.#createHeaders()
   }
 
-  async query<T extends JSONObject>(queryStr: string) {
+  async rawQuery<T extends JSONObject>(queryStr: string) {
     try {
       const res = await fetch(this.sqlUrl, {
         method: "POST",
@@ -62,12 +62,37 @@ export class SurrealDB {
     }
   }
 
-  async singleQuery<T extends JSONObject>(queryStr: string) {
+  async query<T extends JSONObject>(queryStr: string) {
     try {
       const res = await fetch(this.sqlUrl, {
         method: "POST",
         headers: this.headers,
         body: queryStr
+      })
+  
+      const queryResults = await res.json() as QueryResult<T>[]
+      const firstQR = queryResults[0]
+  
+      if (!res.ok || !firstQR) {
+        if (queryResults) console.error(queryResults)
+        return [] as T[][]
+      }
+  
+      return queryResults.map(qr => qr.result ?? [])
+    } catch (err) {
+      console.error(err)
+      return [] as T[][]
+    }
+  }
+
+  async singleQuery<T extends JSONObject>(queryStr: string) {
+    const [ query ] = queryStr.split(";")
+
+    try {
+      const res = await fetch(this.sqlUrl, {
+        method: "POST",
+        headers: this.headers,
+        body: query
       })
   
       const queryResults = await res.json() as QueryResult<T>[]
