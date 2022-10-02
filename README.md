@@ -6,9 +6,11 @@
 
 **Disclaimer! This project is not meant to be a replacement or contender to any official tools/libraries. It is not stable, and exists merely because I wanted to do a small project involving SurrealDB.**
 
-This library has no dependencies
+This library has no dependencies.
 
-For documentation on SurrealDB go to the official [SurrealDB Website](https://surrealdb.com)
+Updated for beta-8 release.
+
+For documentation on SurrealDB go to the official [SurrealDB Website](https://surrealdb.com).
 
 <br>
 

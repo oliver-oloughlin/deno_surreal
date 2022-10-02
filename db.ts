@@ -243,7 +243,7 @@ export class SurrealDB {
   #createHeaders() {
     const auth = `Basic ${btoa(`${this.user}:${this.pass}`)}`
     return new Headers({
-      "Content-Type": "application/json",
+      "Accept": "application/json",
       "Authorization": auth,
       "NS": this.namespace,
       "DB": this.database
