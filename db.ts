@@ -181,7 +181,7 @@ export class SurrealDB {
     }
   }
 
-  async update<T extends JSONObject>(identifier: string, data: PartialDataObject<T>) {
+  async update<T extends JSONObject>(identifier: string, data: DataObject<T>) {
     try {
       const url = this.#getIdentifierUrl(identifier)
       const res = await fetch(url, {

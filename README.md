@@ -92,9 +92,10 @@ Delete one or more records from a table:
 Update a specific record:
 ```
   const p1 = await db.update<Person>("person:1", {
+    name: "Maxy",
     age: 98
   })
-  console.log(p1) // Prints: { age: 98, id: "person:1", name: "Max Manus" }
+  console.log(p1) // Prints: { age: 98, id: "person:1", name: "Maxy" }
 ```
 
 <br>
