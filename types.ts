@@ -6,6 +6,7 @@ export interface QueryResult<T> {
 }
 
 export interface ConnectionOptions {
+  host: string,
   user: string,
   pass: string,
   namespace: string,

@@ -1,4 +1,5 @@
-import { ConnectionOptions, Record, JSONObject, DataObject, PartialDataObject, QueryResult } from "./types.ts"
+import { ConnectionOptions, Record, JSONObject, DataObject, PartialDataObject } from "./types.ts"
+import { parseQueryResult, parseSurrealResponse } from "./utils.ts"
 
 export class SurrealDB {
 
@@ -10,14 +11,15 @@ export class SurrealDB {
   private database: string
   private headers: Headers
 
-  constructor(url: string = "http://127.0.0.1:8000", {
+  constructor({
+    host,
     user,
     pass,
     namespace,
     database
   }: ConnectionOptions) {
-    this.sqlUrl = `${url}/sql`
-    this.tableUrl = `${url}/key/`
+    this.sqlUrl = `${host}/sql`
+    this.tableUrl = `${host}/key/`
 
     this.user = user
     this.pass = pass
@@ -40,197 +42,109 @@ export class SurrealDB {
   }
 
   async rawQuery<T extends JSONObject>(queryStr: string) {
-    try {
-      const res = await fetch(this.sqlUrl, {
-        method: "POST",
-        headers: this.headers,
-        body: queryStr
-      })
-  
-      const queryResults = await res.json() as QueryResult<T>[]
-      const firstQR = queryResults[0]
-  
-      if (!res.ok || !firstQR) {
-        if (queryResults) console.error(queryResults)
-        return [] as QueryResult<T>[]
-      }
-  
-      return queryResults
-    } catch (err) {
-      console.error(err)
-      return [] as QueryResult<T>[]
-    }
+    const res = await fetch(this.sqlUrl, {
+      method: "POST",
+      headers: this.headers,
+      body: queryStr
+    })
+
+    const json = await res.json()
+    return parseSurrealResponse<T>(json)
   }
 
   async query<T extends JSONObject>(queryStr: string) {
-    try {
-      const res = await fetch(this.sqlUrl, {
-        method: "POST",
-        headers: this.headers,
-        body: queryStr
-      })
-  
-      const queryResults = await res.json() as QueryResult<T>[]
-      const firstQR = queryResults[0]
-  
-      if (!res.ok || !firstQR) {
-        if (queryResults) console.error(queryResults)
-        return [] as T[][]
-      }
-  
-      return queryResults.map(qr => qr.result ?? [])
-    } catch (err) {
-      console.error(err)
-      return [] as T[][]
-    }
+    const res = await fetch(this.sqlUrl, {
+      method: "POST",
+      headers: this.headers,
+      body: queryStr
+    })
+
+    const json = await res.json()
+    const results = parseSurrealResponse<T>(json)
+    return results.map(parseQueryResult<T>)
   }
 
   async singleQuery<T extends JSONObject>(queryStr: string) {
     const [ query ] = queryStr.split(";")
 
-    try {
-      const res = await fetch(this.sqlUrl, {
-        method: "POST",
-        headers: this.headers,
-        body: query
-      })
-  
-      const queryResults = await res.json() as QueryResult<T>[]
-      const firstQR = queryResults[0]
-      const result = firstQR?.result
-  
-      if (!res.ok || !firstQR || !result) {
-        if (queryResults) console.error(queryResults)
-        return [] as T[]
-      }
-  
-      return result
-    } catch (err) {
-      console.error(err)
-      return [] as T[]
-    }
-  }
+    const res = await fetch(this.sqlUrl, {
+      method: "POST",
+      headers: this.headers,
+      body: query
+    })
 
-  async create<T extends JSONObject>(identifier: string, data: DataObject<T>) {
-    try {
-      const url = this.#getIdentifierUrl(identifier)
-      const res = await fetch(url, {
-        method: "POST",
-        headers: this.headers,
-        body: JSON.stringify(data)
-      })
-
-      const queryResults = await res.json() as QueryResult<Record<T>>[]
-      const firstQR = queryResults[0]
-      const result = firstQR?.result
-
-      if (!res.ok || firstQR.status === "ERR" || !result) {
-        if (firstQR) console.error(firstQR)
-        return null
-      }
-
-      const [ created ] = result
-      return created
-    } catch (err) {
-      console.error(err)
-      return null
-    }
+    const json = await res.json()
+    const [ queryResult ] = parseSurrealResponse<T>(json)
+    return parseQueryResult<T>(queryResult)
   }
 
   async select<T extends JSONObject>(identifier: string) {
-    try {
-      const url = this.#getIdentifierUrl(identifier)
-      const res = await fetch(url, {
-        method: "GET",
-        headers: this.headers
-      })
+    const url = this.#getIdentifierUrl(identifier)
+    const res = await fetch(url, {
+      method: "GET",
+      headers: this.headers
+    })
 
-      const queryResults = await res.json() as QueryResult<Record<T>>[]
-      const firstQR = queryResults[0]
-      const result = firstQR?.result
+    const json = await res.json()
+    const [ queryResult ] = parseSurrealResponse<Record<T>>(json)
+    return parseQueryResult<Record<T>>(queryResult)
+  }
 
-      if (!res.ok || !result || firstQR.status === "ERR") {
-        if (firstQR) console.error(firstQR)
-        return [] as Record<T>[]
-      }
+  async create<T extends JSONObject>(identifier: string, data: DataObject<T>) {
+    const url = this.#getIdentifierUrl(identifier)
+    const res = await fetch(url, {
+      method: "POST",
+      headers: this.headers,
+      body: JSON.stringify(data)
+    })
 
-      return firstQR.result!
-    } catch (err) {
-      console.error(err)
-      return [] as Record<T>[]
-    }
+    const json = await res.json()
+    const [ queryResult ] = parseSurrealResponse<Record<T>>(json)
+    const result = parseQueryResult<Record<T>>(queryResult)
+    const [ created ] = result
+    return created
   }
 
   async delete(identifier: string) {
-    try {
-      const url = this.#getIdentifierUrl(identifier)
-      const res = await fetch(url, {
-        method: "DELETE",
-        headers: this.headers
-      })
+    const url = this.#getIdentifierUrl(identifier)
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: this.headers
+    })
 
-      const queryResults = await res.json()
-      const firstQR = queryResults[0]
-
-      if (!res.ok || !firstQR || firstQR.status === "ERR") {
-        if (firstQR) console.error(firstQR)
-        else console.error(queryResults)
-      }
-    } catch (err) {
-      console.error(err)
-    }
+    const json = await res.json()
+    const [ queryResult ] = parseSurrealResponse(json)
+    parseQueryResult(queryResult)
   }
 
   async update<T extends JSONObject>(identifier: string, data: DataObject<T>) {
-    try {
-      const url = this.#getIdentifierUrl(identifier)
-      const res = await fetch(url, {
-        method: "PUT",
-        headers: this.headers,
-        body: JSON.stringify(data)
-      })
+    const url = this.#getIdentifierUrl(identifier)
+    const res = await fetch(url, {
+      method: "PUT",
+      headers: this.headers,
+      body: JSON.stringify(data)
+    })
 
-      const queryResults = await res.json() as QueryResult<Record<T>>[]
-      const firstQR = queryResults[0]
-      const result = firstQR?.result
-
-      if (!res.ok || !result || firstQR.status === "ERR") {
-        if (firstQR) console.error(firstQR)
-        return null
-      }
-
-      const [ updated ] = result
-      return updated
-    } catch (err) {
-      console.error(err)
-      return null
-    }
+    const json = await res.json()
+    const [ queryResult ] = parseSurrealResponse<Record<T>>(json)
+    const result = parseQueryResult<Record<T>>(queryResult)
+    const [ created ] = result
+    return created
   }
 
   async modify<T extends JSONObject>(identifier: string, data: PartialDataObject<T>) {
-    try {
-      const url = this.#getIdentifierUrl(identifier)
-      const res = await fetch(url, {
-        method: "PATCH",
-        headers: this.headers,
-        body: JSON.stringify(data)
-      })
+    const url = this.#getIdentifierUrl(identifier)
+    const res = await fetch(url, {
+      method: "PATCH",
+      headers: this.headers,
+      body: JSON.stringify(data)
+    })
 
-      const queryResults = await res.json() as QueryResult<Record<T>>[]
-      const firstQR = queryResults[0]
-      const result = firstQR?.result
-
-      if (!res.ok || !result || firstQR.status === "ERR") {
-        if (firstQR) console.error(firstQR)
-        return null
-      }
-
-      const [ modified ] = result
-      return modified
-    } catch (err) {
-      console.error(err)
-      return null
-    }
+    const json = await res.json()
+    const [ queryResult ] = parseSurrealResponse<Record<T>>(json)
+    const result = parseQueryResult<Record<T>>(queryResult)
+    const [ created ] = result
+    return created
   }
 
   #getIdentifierUrl(identifier: string) {
