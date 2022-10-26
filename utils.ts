@@ -15,5 +15,3 @@ export function settersToString<T extends JSONObject>(setters: Setters<T>) {
   const settersArr = Object.entries(setters).map(([key, [op, value]]) => `${key} ${op} ${JSON.stringify(value)}`)
   return settersArr.join(", ")
 }
-
-export const IncompleteQueryError = new Error("Incomplete Query")

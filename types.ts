@@ -17,13 +17,9 @@ export interface ConnectionOptions {
 // Query types
 export type CompareOperator = ">" | "<" | "==" | "<=" | ">="
 
-export type SetOperator = "="
-
-export type ArrayOperator = "+=" | "-="
+export type SetOperator = "=" | "+=" | "-="
 
 export type Order = "asc" | "desc"
-
-export type QueryType = "select" | "update" | "modify" | "set"
 
 // Data types
 export type Record<T extends JSONObject> = T & { id: string }
@@ -36,7 +32,7 @@ export type Setters<T extends JSONObject> = {
   [key in keyof PartialDataObject<T>]: Setter
 }
 
-export type Setter = [op: SetOperator, value: JSONValue] | [op: ArrayOperator, value: PrimitiveValue]
+export type Setter = [op: SetOperator, value: JSONValue]
 
 // JSON and basic types
 export interface JSONObject {
