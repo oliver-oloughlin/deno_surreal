@@ -1,5 +1,5 @@
-import { ConnectionOptions, Record, JSONObject, DataObject, PartialDataObject } from "./types.ts"
-import { parseQueryResult, parseSurrealResponse } from "./utils.ts"
+import { ConnectionOptions, Record, JSONObject, DataObject, PartialDataObject, Setters } from "./types.ts"
+import { parseQueryResult, parseSurrealResponse, settersToString } from "./utils.ts"
 import { QueryBuilder } from "./builder.ts"
 
 export class SurrealDB {
@@ -146,6 +146,12 @@ export class SurrealDB {
     const result = parseQueryResult<Record<T>>(queryResult)
     const [ created ] = result
     return created
+  }
+
+  async set<T extends JSONObject>(identifier: string, setters: Setters<T>) {
+    const settersStr = settersToString(setters)
+    const [ updated ] = await this.query<T>(`UPDATE ${identifier} SET ${settersStr}`)
+    return updated
   }
 
   queryBuilder<T extends JSONObject>() {

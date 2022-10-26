@@ -14,17 +14,29 @@ export interface ConnectionOptions {
   database: string
 }
 
-// Operators
-export type Operator = ">" | "<" | "==" | "<=" | ">="
+// Query types
+export type CompareOperator = ">" | "<" | "==" | "<=" | ">="
+
+export type SetOperator = "="
+
+export type ArrayOperator = "+=" | "-="
 
 export type Order = "asc" | "desc"
 
+export type QueryType = "select" | "update" | "modify" | "set"
+
 // Data types
-export type Record<T> = T & { id: string }
+export type Record<T extends JSONObject> = T & { id: string }
 
-export type PartialDataObject<T> = Omit<Partial<T>, "id">
+export type PartialDataObject<T extends JSONObject> = Omit<Partial<T>, "id">
 
-export type DataObject<T> = Omit<T, "id">
+export type DataObject<T extends JSONObject> = Omit<T, "id">
+
+export type Setters<T extends JSONObject> = {
+  [key in keyof PartialDataObject<T>]: Setter
+}
+
+export type Setter = [op: SetOperator, value: JSONValue] | [op: ArrayOperator, value: PrimitiveValue]
 
 // JSON and basic types
 export interface JSONObject {
