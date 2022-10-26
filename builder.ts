@@ -1,5 +1,5 @@
 import { SurrealDB } from "./db.ts"
-import { JSONObject, CompareOperator, Order, PrimitiveValue, DataObject, PartialDataObject, Setters } from "./types.ts"
+import { JSONObject, CompareOperator, Order, PrimitiveValue, DataObject, PartialDataObject, Setters, Record } from "./types.ts"
 import { settersToString } from "./utils.ts"
 
 export class QueryBuilder<T extends JSONObject> {
@@ -118,7 +118,7 @@ class UpdateQueryBuilder<T extends JSONObject> {
 
   async execute() {
     const queryStr = `${this.update}${this.#where}`
-    return await this.db.query<T>(queryStr)
+    return await this.db.query<Record<T>>(queryStr)
   }
 
 }
