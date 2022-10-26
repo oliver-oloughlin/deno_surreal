@@ -122,7 +122,7 @@ const queryStr = `
 `
 
 try {
-  const [ people, peopleUnder18 ] = await db.query(queryStr)
+  const [ people, peopleUnder18 ] = await db.queries(queryStr)
   console.log(people) // Prints: [ { age: 32, id: "person:1", name: "Max Manus" }
   console.log(peopleUnder18) // Prints: []
 } catch(err) {
@@ -136,7 +136,7 @@ Execute a single custom query:
 > Will only execute the first query if multiple are present, returns a single result list.
 ```
 try {
-  const peopleNamedMax = await db.singleQuery<Person>("SELECT * FROM person WHERE name = 'Max Manus'")
+  const peopleNamedMax = await db.query<Person>("SELECT * FROM person WHERE name = 'Max Manus'")
   console.log(peopleNamedMax) 
   // Prints: [ { age: 32, id: "person:1", name: "Max Manus" } ]
 } catch(err) {
@@ -155,7 +155,7 @@ SELECT * FROM person WHERE age < 18;
 `
 
 try {
-  const queryResults = await db.rawQuery(queryStr)
+  const queryResults = await db.rawQueries(queryStr)
   queryResults.forEach(qr => {
     if (qr.status === "ERR") {
       // Handle erronous result

@@ -1,5 +1,6 @@
 import { ConnectionOptions, Record, JSONObject, DataObject, PartialDataObject } from "./types.ts"
 import { parseQueryResult, parseSurrealResponse } from "./utils.ts"
+import { QueryBuilder } from "./builder.ts"
 
 export class SurrealDB {
 
@@ -41,7 +42,7 @@ export class SurrealDB {
     this.headers = this.#createHeaders()
   }
 
-  async rawQuery<T extends JSONObject>(queryStr: string) {
+  async rawQueries<T extends JSONObject>(queryStr: string) {
     const res = await fetch(this.sqlUrl, {
       method: "POST",
       headers: this.headers,
@@ -52,7 +53,7 @@ export class SurrealDB {
     return parseSurrealResponse<T>(json)
   }
 
-  async query<T extends JSONObject>(queryStr: string) {
+  async queries<T extends JSONObject>(queryStr: string) {
     const res = await fetch(this.sqlUrl, {
       method: "POST",
       headers: this.headers,
@@ -64,7 +65,7 @@ export class SurrealDB {
     return results.map(parseQueryResult<T>)
   }
 
-  async singleQuery<T extends JSONObject>(queryStr: string) {
+  async query<T extends JSONObject>(queryStr: string) {
     const [ query ] = queryStr.split(";")
 
     const res = await fetch(this.sqlUrl, {
@@ -145,6 +146,10 @@ export class SurrealDB {
     const result = parseQueryResult<Record<T>>(queryResult)
     const [ created ] = result
     return created
+  }
+
+  queryBuilder<T extends JSONObject>() {
+    return new QueryBuilder<T>(this)
   }
 
   #getIdentifierUrl(identifier: string) {
