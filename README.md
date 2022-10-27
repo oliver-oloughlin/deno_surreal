@@ -2,9 +2,9 @@
 
 **Disclaimer! This project is not meant to be a replacement or contender to any official tools/libraries. It is not stable, and exists merely because I wanted to do a small project involving SurrealDB.**
 
-Simple library for querying a SurrealDB database.
+Simple and lightweight module for querying a SurrealDB database.
 
-This library has no dependencies.
+This module has no dependencies.
 
 Updated for beta-8 release.
 
@@ -16,8 +16,8 @@ For documentation on SurrealDB go to the official [SurrealDB Website](https://su
 
 <br>
 
-Create a SurrealDB connection:
-> Make sure it is the base url to your hosted database, and includes the port.
+Create a SurrealDB instance with connection info:
+> Make sure "host" is the base url to your database, and includes the port.
 
 > As of now only allows basic authentication.
 ```
@@ -192,7 +192,7 @@ Build and execute queries using the query builder:
 ```
 try {
   const selected = await db.queryBuilder()
-    .select("age, name, id")
+    .select("age", "name", "id")
     .from("person", "animal")
     .where("age", ">=", 12)
     .where("name", "CONTAINS", "e")
