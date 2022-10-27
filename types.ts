@@ -15,11 +15,13 @@ export interface ConnectionOptions {
 }
 
 // Query types
-export type CompareOperator = ">" | "<" | "==" | "<=" | ">="
+export type CompareOperator = ">" | "<" | "==" | "!=" | "<=" | ">=" | "CONTAINS"
 
 export type SetOperator = "=" | "+=" | "-="
 
-export type Order = "asc" | "desc"
+export type Order = "ASC" | "DESC"
+
+export type ReturnType = "NONE" | "AFTER" | "BEFORE" | "DIFF" | "FIELDS"
 
 // Data types
 export type Record<T extends JSONObject> = T & { id: string }

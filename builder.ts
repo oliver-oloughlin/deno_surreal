@@ -1,5 +1,5 @@
 import { SurrealDB } from "./db.ts"
-import { JSONObject, CompareOperator, Order, PrimitiveValue, DataObject, PartialDataObject, Setters, Record } from "./types.ts"
+import { JSONObject, CompareOperator, Order, PrimitiveValue, DataObject, PartialDataObject, Setters, Record, ReturnType } from "./types.ts"
 import { settersToString } from "./utils.ts"
 
 export class QueryBuilder<T extends JSONObject> {
@@ -17,18 +17,23 @@ export class QueryBuilder<T extends JSONObject> {
 
   update(identifier: string, data: DataObject<T>) {
     const update = `UPDATE ${identifier} CONTENT ${JSON.stringify(data)}`
-    return new UpdateQueryBuilder<T>(this.db, update)
+    return new ActionQueryBuilder<T>(this.db, update)
   }
 
   modify(identifier: string, data: PartialDataObject<T>) {
-    const update = `UPDATE ${identifier} MERGE ${JSON.stringify(data)}`
-    return new UpdateQueryBuilder<T>(this.db, update)
+    const modify = `UPDATE ${identifier} MERGE ${JSON.stringify(data)}`
+    return new ActionQueryBuilder<T>(this.db, modify)
   }
 
   set(identifier: string, setters: Setters<T>) {
     const settersStr = settersToString(setters)
-    const update = `UPDATE ${identifier} SET ${settersStr}`
-    return new UpdateQueryBuilder<T>(this.db, update)
+    const set = `UPDATE ${identifier} SET ${settersStr}`
+    return new ActionQueryBuilder<T>(this.db, set)
+  }
+
+  delete(identifier: string) {
+    const _delete = `DELETE ${identifier}`
+    return new ActionQueryBuilder(this.db, _delete)
   }
 
 }
@@ -81,7 +86,7 @@ class SelectQueryBuilder<T extends JSONObject> {
     return this
   }
 
-  orderBy(field: string, order: Order = "asc") {
+  orderBy(field: string, order: Order = "ASC") {
     this.#orderBy = ` ORDER BY ${field} ${order}`
     return this
   }
@@ -98,15 +103,17 @@ class SelectQueryBuilder<T extends JSONObject> {
 
 }
 
-class UpdateQueryBuilder<T extends JSONObject> {
+class ActionQueryBuilder<T extends JSONObject> {
 
   #where: string
-  private update: string
+  #return: string
+  private action: string
   private db: SurrealDB
 
-  constructor(db: SurrealDB, update: string) {
+  constructor(db: SurrealDB, action: string) {
     this.#where = ""
-    this.update = update
+    this.#return = ""
+    this.action = action
     this.db = db
   }
 
@@ -116,8 +123,16 @@ class UpdateQueryBuilder<T extends JSONObject> {
     return this
   }
 
+  return(type: ReturnType, ...fields: string[]) {
+    let _return = " RETURN "
+    if (type === "FIELDS") _return += fields.join(", ")
+    else _return += type
+    this.#return = _return
+    return this
+  }
+
   async execute() {
-    const queryStr = `${this.update}${this.#where}`
+    const queryStr = `${this.action}${this.#where}${this.#return}`
     return await this.db.query<Record<T>>(queryStr)
   }
 

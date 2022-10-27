@@ -1,16 +1,18 @@
 # deno_surreal
 
-### Simple library for querying a SurrealDB database
-
-<br>
-
 **Disclaimer! This project is not meant to be a replacement or contender to any official tools/libraries. It is not stable, and exists merely because I wanted to do a small project involving SurrealDB.**
+
+Simple library for querying a SurrealDB database.
 
 This library has no dependencies.
 
 Updated for beta-8 release.
 
 For documentation on SurrealDB go to the official [SurrealDB Website](https://surrealdb.com).
+
+<br><br>
+
+## Authentication
 
 <br>
 
@@ -52,6 +54,10 @@ db.use({
 })
 ```
 
+<br><br>
+
+## Fixed Queries
+
 <br>
 
 Create a new table record:
@@ -87,7 +93,7 @@ const result2 = await db.select<Person>("person:1")
 Delete one or more records from a table:
 ```
 await db.delete("person") // Delete all people
-await db.delete("person:1") // Delete only person with id "person:1"
+await db.delete("person:1") // Only delete person with id "person:1"
 ```
 
 <br>
@@ -111,9 +117,13 @@ const p1 = await db.modify<Person>("person:1", {
 console.log(p1) // Prints: { age: 57, id: "person:1", name: "Max Manus" }
 ```
 
+<br><br>
+
+## Custom Queries
+
 <br>
 
-Execute custom queries:
+Execute mutiple custom queries:
 > Can execute multiple queries in one request, returns a list of result lists.
 ```
 const queryStr = `
@@ -125,7 +135,8 @@ try {
   const [ people, peopleUnder18 ] = await db.queries(queryStr)
   console.log(people) // Prints: [ { age: 32, id: "person:1", name: "Max Manus" }
   console.log(peopleUnder18) // Prints: []
-} catch(err) {
+} 
+catch (err) {
   console.error(err)
 }
 ```
@@ -139,7 +150,8 @@ try {
   const peopleNamedMax = await db.query<Person>("SELECT * FROM person WHERE name = 'Max Manus'")
   console.log(peopleNamedMax) 
   // Prints: [ { age: 32, id: "person:1", name: "Max Manus" } ]
-} catch(err) {
+} 
+catch (err) {
   console.error(err)
 }
 ```
@@ -164,7 +176,76 @@ try {
       const result =  qr.result
     }
   })
-} catch(err) {
+} 
+catch (err) {
+  console.error(err)
+}
+```
+
+<br><br>
+
+## Query Building
+
+<br>
+
+Build and execute queries using the query builder:
+```
+try {
+  const selected = await db.queryBuilder()
+    .select("age, name, id")
+    .from("person", "animal")
+    .where("age", ">=", 12)
+    .where("name", "CONTAINS", "e")
+    .groupBy("name", "age")
+    .orderBy("age", "DESC")
+    .limit(5)
+    .execute()
+}
+catch (err) {
+  console.error(err)
+}
+```
+
+```
+try {
+  const updated = await db.queryBuilder()
+    .update("person", {
+      name: "Oliver",
+      age: 23
+    })
+    .where("age", "!=", 20)
+    .return("BEFORE")
+    .execute()
+}
+catch (err) {
+  console.error(err)
+}
+```
+
+```
+try {
+  const updated = await db.queryBuilder()
+    .set("person:1", {
+      age: ["+=", 1],
+      name: ["=", "Thomas"]
+    })
+    .return("FIELDS", "age", "name")
+    .execute()
+}
+catch (err) {
+  console.error(err)
+}
+```
+
+```
+try {
+  const deleted = await db.queryBuilder()
+    .delete("person")
+    .where("age", "<", 18)
+    .return("BEFORE")
+    .execute()
+}
+catch (err) {
   console.error(err)
 }
 ```
