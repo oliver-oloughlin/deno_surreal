@@ -14,11 +14,12 @@ export interface ConnectionOptions {
   database: string
 }
 
-// Query types
-export type CompareOperator = ">" | "<" | "==" | "!=" | "<=" | ">=" | "CONTAINS"
+// Operators
+export type CompareOperator = ">" | "<" | "==" | "!=" | "<=" | ">=" | "CONTAINS" | "CONTAINSNOT" | "CONTAINSALL" | "CONTAINSANY" | "CONTAINSNONE"
 
 export type SetOperator = "=" | "+=" | "-="
 
+// Query types
 export type Order = "ASC" | "DESC"
 
 export type ReturnType = "NONE" | "AFTER" | "BEFORE" | "DIFF" | "FIELDS"

@@ -61,6 +61,7 @@ class SelectQueryBuilder<T extends JSONObject> {
   #groupBy: string
   #orderBy: string
   #limit: string
+  #start: string
   private select: string
   private from: string
   private db: SurrealDB
@@ -73,6 +74,7 @@ class SelectQueryBuilder<T extends JSONObject> {
     this.#groupBy = ""
     this.#orderBy = ""
     this.#limit = ""
+    this.#start = ""
   }
 
   where(field: string, op: CompareOperator, value: PrimitiveValue) {
@@ -91,13 +93,18 @@ class SelectQueryBuilder<T extends JSONObject> {
     return this
   }
 
-  limit(num: number) {
-    this.#limit = num > 0 ? ` LIMIT ${num}` : ""
+  limit(limit: number) {
+    this.#limit = limit > 0 ? ` LIMIT ${limit}` : ""
+    return this
+  }
+
+  start(start: number) {
+    this.#start = start >= 0 ? ` START ${start}` : ""
     return this
   }
 
   async execute() {
-    const queryStr = `${this.select}${this.from}${this.#where}${this.#groupBy}${this.#orderBy}${this.#limit}`
+    const queryStr = `${this.select}${this.from}${this.#where}${this.#groupBy}${this.#orderBy}${this.#limit}${this.#start}`
     return await this.db.query<T>(queryStr)
   }
 
