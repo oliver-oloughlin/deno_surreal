@@ -17,14 +17,14 @@ For documentation on SurrealDB go to the official [SurrealDB Website](https://su
 <br>
 
 Create a SurrealDB instance with connection info:
-> Make sure "host" is the base url to your database, and includes the port.
 
-> As of now only allows basic authentication.
+> As of now, only allows basic authentication.
 ```
 import { SurrealDB } from "https://deno.land/x/deno_surreal/mod.ts"
 
 const db = new SurrealDB({
-  host: "http://localhost:8000",
+  host: "localhost",
+  port: 8000, // Will default to 8000 if not specified
   user: "root",
   pass: "root",
   namespace: "test",
