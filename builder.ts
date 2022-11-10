@@ -1,5 +1,5 @@
 import { SurrealDB } from "./db.ts"
-import { JSONObject, CompareOperator, Order, PrimitiveValue, DataObject, PartialDataObject, Setters, Record, ReturnType } from "./types.ts"
+import { JSONObject, CompareOperator, Order, PrimitiveValue, DataObject, PartialDataObject, Setters, Record, ReturnType, JSONValue } from "./types.ts"
 import { settersToString } from "./utils.ts"
 
 export class QueryBuilder<T extends JSONObject> {
@@ -50,7 +50,7 @@ class SelectQueryBuilderStart<T extends JSONObject> {
 
   from(...identifiers: string[]) {
     const from = ` FROM ${identifiers.join(", ")}`
-    return new SelectQueryBuilder(this.db, this.select, from)
+    return new SelectQueryBuilder<T>(this.db, this.select, from)
   }
 
 }
@@ -77,9 +77,10 @@ class SelectQueryBuilder<T extends JSONObject> {
     this.#start = ""
   }
 
-  where(field: string, op: CompareOperator, value: PrimitiveValue) {
-    if (this.#where) this.#where += ` AND ${field} ${op} ${typeof value === "string" ? `'${value}'` : value}`
-    else this.#where = ` WHERE ${field} ${op} ${typeof value === "string" ? `'${value}'` : value}`
+  where(field: string, op: CompareOperator, value: JSONValue) {
+    const base = `${field} ${op} ${JSON.stringify(value)}`
+    if (this.#where) this.#where += ` AND ${base}`
+    else this.#where = ` WHERE ${base}`
     return this
   }
 
@@ -124,9 +125,10 @@ class ActionQueryBuilder<T extends JSONObject> {
     this.db = db
   }
 
-  where(field: string, op: CompareOperator, value: PrimitiveValue) {
-    if (this.#where) this.#where += ` AND ${field} ${op} ${typeof value === "string" ? `'${value}'` : value}`
-    else this.#where = ` WHERE ${field} ${op} ${typeof value === "string" ? `'${value}'` : value}`
+  where(field: string, op: CompareOperator, value: JSONValue) {
+    const base = `${field} ${op} ${JSON.stringify(value)}`
+    if (this.#where) this.#where += ` AND ${base}`
+    else this.#where = ` WHERE ${base}`
     return this
   }
 

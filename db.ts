@@ -14,13 +14,18 @@ export class SurrealDB {
 
   constructor({
     host,
+    port,
     user,
     pass,
     namespace,
     database
   }: ConnectionOptions) {
-    this.sqlUrl = `${host}/sql`
-    this.tableUrl = `${host}/key/`
+    const [_protocol, _hostname] = host.split(":")
+    const hostname = _hostname ? _hostname.substring(2, _hostname.length) : _protocol
+    const protocol = (hostname === "localhost" || hostname === "127.0.0.1") ? "http" : "https"
+    const baseUrl = `${protocol}:${hostname}:${port ?? 8000}`
+    this.sqlUrl = `${baseUrl}/sql`
+    this.tableUrl = `${baseUrl}/key`
 
     this.user = user
     this.pass = pass
@@ -162,7 +167,7 @@ export class SurrealDB {
     const parts = identifier.split(":")
     const table = parts[0]
     const id = parts[1]
-    return id ? `${this.tableUrl}${table}/${id}` : `${this.tableUrl}${table}`
+    return id ? `${this.tableUrl}/${table}/${id}` : `${this.tableUrl}/${table}`
   }
 
   #createHeaders() {

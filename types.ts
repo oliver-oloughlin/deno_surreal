@@ -8,6 +8,7 @@ export interface QueryResult<T> {
 
 export interface ConnectionOptions {
   host: string,
+  port?: number,
   user: string,
   pass: string,
   namespace: string,
@@ -15,7 +16,7 @@ export interface ConnectionOptions {
 }
 
 // Operators
-export type CompareOperator = ">" | "<" | "==" | "!=" | "<=" | ">=" | "CONTAINS" | "CONTAINSNOT" | "CONTAINSALL" | "CONTAINSANY" | "CONTAINSNONE"
+export type CompareOperator = ">" | "<" | "=" | "==" | "!=" | "<=" | ">=" | "~" | "!~" | "?~" | "*~" | "CONTAINS" | "CONTAINSNOT" | "CONTAINSALL" | "CONTAINSANY" | "CONTAINSNONE" | "INSIDE" | "NOTINSIDE" | "ALLINSIDE" | "ANYINSIDE" | "NONEINSIDE" | "OUTSIDE" | "INTERSECTS"
 
 export type SetOperator = "=" | "+=" | "-="
 
