@@ -20,10 +20,10 @@ export class SurrealDB {
     namespace,
     database
   }: ConnectionOptions) {
-    const [_protocol, _hostname] = host.split(":")
+    const [_protocol, _hostname, _port] = host.split(":")
     const hostname = _hostname ? _hostname.substring(2, _hostname.length) : _protocol
     const protocol = (hostname === "localhost" || hostname === "127.0.0.1") ? "http" : "https"
-    const baseUrl = `${protocol}:${hostname}:${port ?? 8000}`
+    const baseUrl = `${protocol}:${hostname}:${port ?? _port ?? 8000}`
     this.sqlUrl = `${baseUrl}/sql`
     this.tableUrl = `${baseUrl}/key`
 
