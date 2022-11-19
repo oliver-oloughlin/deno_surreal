@@ -1,5 +1,5 @@
 // Database types
-export interface QueryResult<T> {
+export interface QueryResult<T extends JSONObject> {
   time: string,
   status: "OK" | "ERR",
   detail?: string,
@@ -15,30 +15,31 @@ export interface ConnectionOptions {
   database: string
 }
 
-// Operators
+// Operator types
 export type CompareOperator = ">" | "<" | "=" | "==" | "!=" | "<=" | ">=" | "~" | "!~" | "?~" | "*~" | "CONTAINS" | "CONTAINSNOT" | "CONTAINSALL" | "CONTAINSANY" | "CONTAINSNONE" | "INSIDE" | "NOTINSIDE" | "ALLINSIDE" | "ANYINSIDE" | "NONEINSIDE" | "OUTSIDE" | "INTERSECTS"
 
 export type SetOperator = "=" | "+=" | "-="
 
-// Query types
 export type Order = "ASC" | "DESC"
 
 export type ReturnType = "NONE" | "AFTER" | "BEFORE" | "DIFF" | "FIELDS"
 
-// Data types
-export type Record<T extends JSONObject> = T & { id: string }
-
-export type PartialDataObject<T extends JSONObject> = Omit<Partial<T>, "id">
-
-export type DataObject<T extends JSONObject> = Omit<T, "id">
-
-export type Setters<T extends JSONObject> = {
+export type Setters<T extends Model> = {
   [key in keyof PartialDataObject<T>]: Setter
 }
 
 export type Setter = [op: SetOperator, value: JSONValue]
 
-// JSON and basic types
+// Surreal data objects
+export type DataObject<T extends Model> = Omit<T, "id">
+
+export type PartialDataObject<T extends Model> = Partial<DataObject<T>>
+
+export interface Model extends JSONObject {
+  id: string
+}
+
+// JSON object types
 export interface JSONObject {
   [key: string]: JSONValue
 }

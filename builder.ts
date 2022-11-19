@@ -1,8 +1,8 @@
 import { SurrealDB } from "./db.ts"
-import { JSONObject, CompareOperator, Order, PrimitiveValue, DataObject, PartialDataObject, Setters, Record, ReturnType, JSONValue } from "./types.ts"
+import { Model, CompareOperator, Order, DataObject, PartialDataObject, Setters, ReturnType, JSONValue, JSONObject } from "./types.ts"
 import { settersToString } from "./utils.ts"
 
-export class QueryBuilder<T extends JSONObject> {
+export class QueryBuilder {
 
   private db: SurrealDB
 
@@ -10,30 +10,30 @@ export class QueryBuilder<T extends JSONObject> {
     this.db = db
   }
 
-  select(...fields: string[]) {
+  select<T extends JSONObject>(...fields: Array<keyof T>) {
     const select = `SELECT ${fields.join(", ")}`
     return new SelectQueryBuilderStart<T>(this.db, select)
   }
 
-  update(identifier: string, data: DataObject<T>) {
+  update<T extends Model>(identifier: string, data: DataObject<T>) {
     const update = `UPDATE ${identifier} CONTENT ${JSON.stringify(data)}`
     return new ActionQueryBuilder<T>(this.db, update)
   }
 
-  modify(identifier: string, data: PartialDataObject<T>) {
+  modify<T extends Model>(identifier: string, data: PartialDataObject<T>) {
     const modify = `UPDATE ${identifier} MERGE ${JSON.stringify(data)}`
     return new ActionQueryBuilder<T>(this.db, modify)
   }
 
-  set(identifier: string, setters: Setters<T>) {
+  set<T extends Model>(identifier: string, setters: Setters<T>) {
     const settersStr = settersToString(setters)
     const set = `UPDATE ${identifier} SET ${settersStr}`
     return new ActionQueryBuilder<T>(this.db, set)
   }
 
-  delete(identifier: string) {
+  delete<T extends Model>(identifier: string) {
     const _delete = `DELETE ${identifier}`
-    return new ActionQueryBuilder(this.db, _delete)
+    return new ActionQueryBuilder<T>(this.db, _delete)
   }
 
 }
@@ -111,7 +111,7 @@ class SelectQueryBuilder<T extends JSONObject> {
 
 }
 
-class ActionQueryBuilder<T extends JSONObject> {
+class ActionQueryBuilder<T extends Model> {
 
   #where: string
   #return: string
@@ -134,7 +134,9 @@ class ActionQueryBuilder<T extends JSONObject> {
 
   return(type: ReturnType, ...fields: string[]) {
     let _return = " RETURN "
-    if (type === "FIELDS") _return += fields.join(", ")
+    if (type === "FIELDS") {
+      _return += fields.join(", ")
+    }
     else _return += type
     this.#return = _return
     return this
@@ -142,7 +144,7 @@ class ActionQueryBuilder<T extends JSONObject> {
 
   async execute() {
     const queryStr = `${this.action}${this.#where}${this.#return}`
-    return await this.db.query<Record<T>>(queryStr)
+    return await this.db.query<T>(queryStr)
   }
 
 }

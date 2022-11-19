@@ -56,6 +56,41 @@ db.use({
 
 <br><br>
 
+## Defining Models
+
+<br>
+
+For type safety, models can be explicitly defined as such:
+> Models represent the database record, they include the id attribute
+```
+import { Model } from "https://deno.land/x/deno_surreal/mod.ts"
+
+interface Person extends Model {
+  name: string,
+  age: number
+}
+```
+
+<br>
+
+When inserting data, query methods expect either a DataObject or PartialDataObject type of the given model. If you wish to create the data object before using it in a query method, and strongly type it, this can be done by importing the DataObject types:
+> This is unnecessary, as typing is enforced when inserting the data directly in the relevant methods
+
+```
+import { DataObject, PartialDataObject } from "https://deno.land/x/deno_surreal/mod.ts"
+
+const data: DataObject<Person> = {
+  name: "Max Manus",
+  age: 27
+}
+
+const partialData: PartialDataObject<Person> = {
+  age: 40
+}
+```
+
+<br><br>
+
 ## Fixed Queries
 
 <br>
@@ -65,12 +100,6 @@ Create a new table record:
 
 > All requests will throw an error upon receiving an error result from the database. This is less likely to happen with fixed queries.
 ```
-type Person = {
-  id: string
-  name: string,
-  age: number
-}
-
 const p1 = await db.create<Person>("person:1", {
   name: "Max Manus",
   age: 32
@@ -84,16 +113,16 @@ console.log(p1) // Prints: { age: 32, id: "person:1", name: "Max Manus" }
 Select one or more records from a table:
 
 ```
-const result1 = await db.select<Person>("person")
-const result2 = await db.select<Person>("person:1")
+const people = await db.select<Person>("person")
+const [ person1 ] = await db.select<Person>("person:1")
 ```
 
 <br>
 
 Delete one or more records from a table:
 ```
-await db.delete("person") // Delete all people
-await db.delete("person:1") // Only delete person with id "person:1"
+await db.delete("person")   // Delete all people
+await db.delete("person:1") // Only delete person with id = "person:1"
 ```
 
 <br>
@@ -190,9 +219,12 @@ catch (err) {
 
 Build and execute queries using the query builder:
 ```
+const qb = db.queryBuilder()
+```
+
+```
 try {
-  const selected = await db.queryBuilder()
-    .select("age", "name", "id")
+  const selected = await qb.select("age", "name", "id")
     .from("person", "animal")
     .where("age", ">=", 12)
     .where("name", "CONTAINS", "e")
@@ -208,12 +240,11 @@ catch (err) {
 
 ```
 try {
-  const updated = await db.queryBuilder()
-    .update("person", {
+  const updated = await qb.update<Person>("person", {
       name: "Oliver",
       age: 23
     })
-    .where("age", "!=", 20)
+    .where("age", "!=", 23)
     .return("BEFORE")
     .execute()
 }
@@ -224,8 +255,7 @@ catch (err) {
 
 ```
 try {
-  const updated = await db.queryBuilder()
-    .set("person:1", {
+  const updated = await qb.set("person:1", {
       age: ["+=", 1],
       name: ["=", "Thomas"]
     })
@@ -239,8 +269,7 @@ catch (err) {
 
 ```
 try {
-  const deleted = await db.queryBuilder()
-    .delete("person")
+  const deleted = await qb.delete<Person>("person")
     .where("age", "<", 18)
     .return("BEFORE")
     .execute()

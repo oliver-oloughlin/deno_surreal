@@ -1,4 +1,4 @@
-import { ConnectionOptions, Record, JSONObject, DataObject, PartialDataObject, Setters } from "./types.ts"
+import { ConnectionOptions, Model, JSONObject, DataObject, PartialDataObject, Setters } from "./types.ts"
 import { parseQueryResult, parseSurrealResponse, settersToString } from "./utils.ts"
 import { QueryBuilder } from "./builder.ts"
 
@@ -84,7 +84,7 @@ export class SurrealDB {
     return parseQueryResult<T>(queryResult)
   }
 
-  async select<T extends JSONObject>(identifier: string) {
+  async select<T extends Model>(identifier: string) {
     const url = this.#getIdentifierUrl(identifier)
     const res = await fetch(url, {
       method: "GET",
@@ -92,12 +92,13 @@ export class SurrealDB {
     })
 
     const json = await res.json()
-    const [ queryResult ] = parseSurrealResponse<Record<T>>(json)
-    return parseQueryResult<Record<T>>(queryResult)
+    const [ queryResult ] = parseSurrealResponse<T>(json)
+    return parseQueryResult<T>(queryResult)
   }
 
-  async create<T extends JSONObject>(identifier: string, data: DataObject<T>) {
+  async create<T extends Model>(identifier: string, data: DataObject<T>) {
     const url = this.#getIdentifierUrl(identifier)
+
     const res = await fetch(url, {
       method: "POST",
       headers: this.headers,
@@ -105,8 +106,8 @@ export class SurrealDB {
     })
 
     const json = await res.json()
-    const [ queryResult ] = parseSurrealResponse<Record<T>>(json)
-    const result = parseQueryResult<Record<T>>(queryResult)
+    const [ queryResult ] = parseSurrealResponse<T>(json)
+    const result = parseQueryResult<T>(queryResult)
     const [ created ] = result
     return created
   }
@@ -123,7 +124,7 @@ export class SurrealDB {
     parseQueryResult(queryResult)
   }
 
-  async update<T extends JSONObject>(identifier: string, data: DataObject<T>) {
+  async update<T extends Model>(identifier: string, data: DataObject<T>) {
     const url = this.#getIdentifierUrl(identifier)
     const res = await fetch(url, {
       method: "PUT",
@@ -132,13 +133,13 @@ export class SurrealDB {
     })
 
     const json = await res.json()
-    const [ queryResult ] = parseSurrealResponse<Record<T>>(json)
-    const result = parseQueryResult<Record<T>>(queryResult)
+    const [ queryResult ] = parseSurrealResponse<T>(json)
+    const result = parseQueryResult<T>(queryResult)
     const [ created ] = result
     return created
   }
 
-  async modify<T extends JSONObject>(identifier: string, data: PartialDataObject<T>) {
+  async modify<T extends Model>(identifier: string, data: PartialDataObject<T>) {
     const url = this.#getIdentifierUrl(identifier)
     const res = await fetch(url, {
       method: "PATCH",
@@ -147,20 +148,20 @@ export class SurrealDB {
     })
 
     const json = await res.json()
-    const [ queryResult ] = parseSurrealResponse<Record<T>>(json)
-    const result = parseQueryResult<Record<T>>(queryResult)
+    const [ queryResult ] = parseSurrealResponse<T>(json)
+    const result = parseQueryResult<T>(queryResult)
     const [ created ] = result
     return created
   }
 
-  async set<T extends JSONObject>(identifier: string, setters: Setters<T>) {
+  async set<T extends Model>(identifier: string, setters: Setters<T>) {
     const settersStr = settersToString(setters)
     const [ updated ] = await this.query<T>(`UPDATE ${identifier} SET ${settersStr}`)
     return updated
   }
 
-  queryBuilder<T extends JSONObject>() {
-    return new QueryBuilder<T>(this)
+  queryBuilder() {
+    return new QueryBuilder(this)
   }
 
   #getIdentifierUrl(identifier: string) {
