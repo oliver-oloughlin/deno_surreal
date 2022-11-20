@@ -61,31 +61,25 @@ db.use({
 <br>
 
 For type safety, models can be explicitly defined as such:
-> Models represent the database record, they include the id attribute
+> Models represent the database record, they must include the id attribute
 ```
-import { Model } from "https://deno.land/x/deno_surreal/mod.ts"
-
-interface Person extends Model {
+type Person = {
   name: string,
-  age: number
+  age: number,
+  id: string
 }
 ```
 
 <br>
 
-When inserting data, query methods expect either a DataObject or PartialDataObject type of the given model. If you wish to create the data object before using it in a query method, and strongly type it, this can be done by importing the DataObject types:
-> This is unnecessary, as typing is enforced when inserting the data directly in the relevant methods
-
+Can also create interfaces that extend the Model interface, which includes id:
+> Will not provide as strict typing as types
 ```
-import { DataObject, PartialDataObject } from "https://deno.land/x/deno_surreal/mod.ts"
+import { Model } from "https://deno.land/x/deno_surreal/mod.ts"
 
-const data: DataObject<Person> = {
-  name: "Max Manus",
-  age: 27
-}
-
-const partialData: PartialDataObject<Person> = {
-  age: 40
+interface IPerson extends Model {
+  name: string,
+  age: number
 }
 ```
 
